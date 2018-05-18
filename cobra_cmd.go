@@ -129,16 +129,20 @@ func addConfigureCommand(root *cobra.Command) {
 	c := &config{}
 	cmd := &cobra.Command{
 		Use:   "configure [flags] [network]",
-		Short: "creates the necessary configuration files for vpn totp - ca.crt, user.key, and user.crt must be provided separately\nif you are just starting, run configure first",
+		Short: "creates the necessary configuration files for vpn + totp - ca.crt, user.key, and user.crt must be provided separately",
 		Long: `
 configre will create configuration files for this vpn.
 
-vpn expects user certs/keys to live in $HOMEDIR/.vpn/$VPNUSERNAME-$NETWORK, so something like /Users/ccooper/.vpn/ccooper-iad or $HOMEDIR/.vpn/ccooper-default
-this command will create a totp secret file and a config.json file in each network directory.
+vpn expects user certs/keys to live in $HOMEDIR/.vpn/$VPNUSERNAME-$NETWORK, so /Users/ccooper/.vpn/ccooper-iad or $HOMEDIR/.vpn/ccooper-default
+
+this command will create a config.json file in each network directory.
 
 configure will create these directories if they do not exist, but it is the user's responsibility to place the correct ca.crt, username.key, and username.crt in each directory
 
-to be clear, username.key and username.crt should be your actual vpn username, so in my case they would be ccooper.key and ccooper.crt`,
+to be clear, username.key and username.crt should be your actual vpn username, so in my case they would be ccooper.key and ccooper.crt
+
+ca.crt should be called ca.crt exactly
+`,
 		RunE: func(command *cobra.Command, args []string) error {
 			u, err := user.Current()
 			if err != nil {
