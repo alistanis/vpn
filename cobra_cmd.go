@@ -7,6 +7,8 @@ import (
 
 	"strings"
 
+	"fmt"
+
 	"github.com/spf13/cobra"
 )
 
@@ -23,7 +25,6 @@ func rootCmd() *cobra.Command {
 }
 
 func addStartCommand(root *cobra.Command) {
-	var mfa bool
 	aliases := []string{"up"}
 	cmd := &cobra.Command{
 		Use:     "start [flags] [network]",
@@ -39,13 +40,10 @@ func addStartCommand(root *cobra.Command) {
 				return err
 			}
 
-			return start(args[0], u, mfa)
+			return start(args[0], u)
 
 		},
 	}
-
-	cmd.Flags().BoolVarP(&mfa, "mfa", "m", false, "will search for a secret in ~/.totp/secret for use with mfa vpns")
-
 	root.AddCommand(cmd)
 }
 
@@ -90,14 +88,14 @@ func addTotpCommand(root *cobra.Command) {
 			if err != nil {
 				return err
 			}
-			return otp(u)
+			return otp(u, args[0])
 		},
+		Args: cobra.MinimumNArgs(1),
 	}
 	root.AddCommand(cmd)
 }
 
 func addRestartCommand(root *cobra.Command) {
-	var mfa bool
 	cmd := &cobra.Command{
 		Use:   "restart [network]",
 		Short: "restarts a vpn on the given network",
@@ -108,12 +106,53 @@ func addRestartCommand(root *cobra.Command) {
 			if err != nil {
 				return err
 			}
-			return start(args[0], u, mfa)
+			return start(args[0], u)
 		},
 		Args: cobra.MinimumNArgs(1),
 	}
 
-	cmd.Flags().BoolVarP(&mfa, "mfa", "m", false, "will search for a secret in ~/.totp/secret for use with mfa vpns")
+	root.AddCommand(cmd)
+}
+
+type config struct {
+	URL       string `json:"url"`
+	MFASecret string `json:"mfa_secret"`
+	Port      int    `json:"port"`
+}
+
+// URLString returns a URLString suitable for use in openvpn commands
+func (c *config) URLString() string {
+	return fmt.Sprintf("%s %d", c.URL, c.Port)
+}
+
+func addConfigureCommand(root *cobra.Command) {
+	c := &config{}
+	cmd := &cobra.Command{
+		Use:   "configure [flags] [network]",
+		Short: "creates the necessary configuration files for vpn totp - ca.crt, user.key, and user.crt must be provided separately\nif you are just starting, run configure first",
+		Long: `
+configre will create configuration files for this vpn.
+
+vpn expects user certs/keys to live in $HOMEDIR/.vpn/$VPNUSERNAME-$NETWORK, so something like /Users/ccooper/.vpn/ccooper-iad or $HOMEDIR/.vpn/ccooper-default
+this command will create a totp secret file and a config.json file in each network directory.
+
+configure will create these directories if they do not exist, but it is the user's responsibility to place the correct ca.crt, username.key, and username.crt in each directory
+
+to be clear, username.key and username.crt should be your actual vpn username, so in my case they would be ccooper.key and ccooper.crt`,
+		RunE: func(command *cobra.Command, args []string) error {
+			u, err := user.Current()
+			if err != nil {
+				return err
+			}
+			return configure(args[0], c, u)
+		},
+		Args: cobra.MinimumNArgs(1),
+	}
+
+	cmd.Flags().StringVarP(&c.URL, "url", "u", "", "the url for this remote")
+	cmd.Flags().IntVarP(&c.Port, "port", "p", -1, "the port for this remote")
+	cmd.Flags().StringVarP(&c.MFASecret, "mfa-secret", "m", "", "the mfa secret key to generate one time passwords")
+
 	root.AddCommand(cmd)
 }
 
@@ -124,5 +163,6 @@ func setupCommands() *cobra.Command {
 	addStatusCommand(root)
 	addRestartCommand(root)
 	addTotpCommand(root)
+	addConfigureCommand(root)
 	return root
 }
