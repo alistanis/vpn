@@ -3,7 +3,7 @@ Handle vpn's with totp
 
 # usage
 
-```shell
+```
 vpn help
 start a vpn client connection
 
@@ -27,7 +27,7 @@ Use "vpn [command] --help" for more information about a command.
 
 ## configuring
 
-```shell
+```
 vpn help configure
 
 configure will create configuration files for this vpn.
@@ -57,7 +57,7 @@ Note: Currently start simply starts the VPN daemon and exits - in the future, I 
 support for watching the vpn daemon and restarting as necessary. That would probably require running
 the entire process as root initially, so some additional configuration would be necessary.
 
-```shell
+```
 vpn help start
 starts a client connection on the specified network. Aliases "up"
 
@@ -73,7 +73,7 @@ Flags:
 
 ## stop
 
-```shell
+```
 stops a client connection on the specified network. Aliases "down, kill"
 
 Usage:
@@ -88,7 +88,7 @@ Flags:
 
 ## status
 
-```shell
+```
 reports the status of the vpn on the given network. Aliases "ls, stat"
 
 Usage:
@@ -103,7 +103,7 @@ Flags:
 
 ## restart
 
-```shell
+```
 vpn help restart
 restarts a vpn on the given network
 
@@ -117,7 +117,7 @@ Flags:
 ## totp
 Note: If you would just like totp command line support, that is also provided.
 
-```shell
+```
 vpn help totp
 generates a totp password for use with a mfa vpn (or any mfa)
 
