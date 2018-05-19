@@ -33,6 +33,24 @@ func start(network string, u *user.User) error {
 		return err
 	}
 
+	var code string
+	if c.MFASecret != "" {
+		code, err = totp.GenerateCode(c.MFASecret, time.Now())
+		if err != nil {
+			return err
+		}
+	}
+
+	vpnFileData := u.Username + "\n"
+	if code != "" {
+		vpnFileData += code
+	}
+
+	err = ioutil.WriteFile(vpnUserPath, []byte(vpnFileData), 0600)
+	if err != nil {
+		return err
+	}
+
 	err = os.Chdir(networkPath)
 	if err != nil {
 		return err
@@ -42,15 +60,9 @@ func start(network string, u *user.User) error {
 
 	command := fmt.Sprintf(`sudo openvpn --daemon "openvpn %s" --remote %s --ca ca.crt --key %s.key --cert %s.crt --proto udp --resolv-retry infinite --nobind --user nobody --group nogroup --persist-key --persist-tun --max-routes 1000 --verb 3 --comp-lzo --dev tun --client --remote-cert-tls server --auth-user-pass %s --auth-nocache --reneg-sec 0`, network, c.URLString(), u.Username, u.Username, vpnUserPath)
 	fmt.Println(command)
-	//cmd := exec.Command("/bin/bash", "-c", command)
-	//
-	//err = cmd.Start()
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//return cmd.Wait()
-	return nil
+	cmd := exec.Command("/bin/bash", "-c", command)
+
+	return cmd.Run()
 }
 
 func stop(network string) error {
@@ -87,9 +99,8 @@ func otp(u *user.User, network string) error {
 	return nil
 }
 
-// make this take network for future compatibility
 func status(network string) error {
-	command := fmt.Sprintf(`ps aux | grep openvpn | grep -v grep`)
+	command := fmt.Sprintf(`ps aux | grep openvpn | grep -v grep | grep %s`, network)
 	err := execute(command)
 	if err != nil {
 		if err.Error() == "exit status 1" {
@@ -127,13 +138,8 @@ func configure(network string, c *config, u *user.User) error {
 		}
 	}
 
-	networkPath, vpnUserPath := getPaths(u, network)
+	networkPath, _ := getPaths(u, network)
 	configPath := filepath.Join(networkPath, "config.json")
-
-	err := ioutil.WriteFile(vpnUserPath, []byte(u.Username), 0600)
-	if err != nil {
-		return err
-	}
 
 	configData, err := json.Marshal(c)
 	err = ioutil.WriteFile(configPath, configData, 0600)

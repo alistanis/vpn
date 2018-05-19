@@ -51,7 +51,7 @@ func addStopCommand(root *cobra.Command) {
 	aliases := []string{"down", "kill"}
 	cmd := &cobra.Command{
 		Use:     "stop [flags] [network]",
-		Short:   "stops a client connection on the specified network. Aliases \"" + strings.Join(aliases, " ") + "\"",
+		Short:   "stops a client connection on the specified network. Aliases \"" + strings.Join(aliases, ", ") + "\"",
 		Aliases: aliases,
 		RunE: func(c *cobra.Command, args []string) error {
 			if len(args) != 1 {
@@ -82,7 +82,7 @@ func addStatusCommand(root *cobra.Command) {
 func addTotpCommand(root *cobra.Command) {
 	cmd := &cobra.Command{
 		Use:   "totp",
-		Short: "generates a totp password for use with a mfa vpn",
+		Short: "generates a totp password for use with a mfa vpn (or any mfa)",
 		RunE: func(c *cobra.Command, args []string) error {
 			u, err := user.Current()
 			if err != nil {
@@ -131,7 +131,7 @@ func addConfigureCommand(root *cobra.Command) {
 		Use:   "configure [flags] [network]",
 		Short: "creates the necessary configuration files for vpn + totp - ca.crt, user.key, and user.crt must be provided separately",
 		Long: `
-configre will create configuration files for this vpn.
+configure will create configuration files for this vpn.
 
 vpn expects user certs/keys to live in $HOMEDIR/.vpn/$VPNUSERNAME-$NETWORK, so /Users/ccooper/.vpn/ccooper-iad or $HOMEDIR/.vpn/ccooper-default
 
