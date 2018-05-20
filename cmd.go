@@ -17,7 +17,6 @@ import (
 )
 
 func start(network string, u *user.User) error {
-
 	networkPath, vpnUserPath := getPaths(u, network)
 	configPath := filepath.Join(networkPath, "config.json")
 
@@ -101,6 +100,18 @@ func otp(u *user.User, network string) error {
 
 func status(network string) error {
 	command := fmt.Sprintf(`ps aux | grep openvpn | grep -v grep | grep %s`, network)
+	err := execute(command)
+	if err != nil {
+		if err.Error() == "exit status 1" {
+			fmt.Println("vpn is not running")
+			return nil
+		}
+	}
+	return err
+}
+
+func allStatus() error {
+	command := `ps aux | grep openvpn | grep -v grep`
 	err := execute(command)
 	if err != nil {
 		if err.Error() == "exit status 1" {
