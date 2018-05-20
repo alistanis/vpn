@@ -63,31 +63,19 @@ func addStopCommand(root *cobra.Command) {
 	root.AddCommand(cmd)
 }
 
-func addStatusAny(root *cobra.Command) {
-	cmd := &cobra.Command{
-		Use:   "any",
-		Short: "reports vpn status on any network",
-		RunE: func(c *cobra.Command, args []string) error {
-			return allStatus()
-		},
-	}
-	root.AddCommand(cmd)
-}
-
 func addStatusCommand(root *cobra.Command) {
 	aliases := []string{"ls", "stat"}
 	cmd := &cobra.Command{
 		Use:     "status [network]",
-		Short:   "reports the status of the vpn on the given network. \"any\" will print all statuses. Aliases \"" + strings.Join(aliases, ", ") + "\"",
+		Short:   "reports the status of the vpn on the given network, or all if no network is provided. Aliases \"" + strings.Join(aliases, ", ") + "\"",
 		Aliases: aliases,
 		RunE: func(c *cobra.Command, args []string) error {
 			if len(args) > 0 {
 				return status(args[0])
 			}
-			return status("")
+			return allStatus()
 		},
 	}
-	addStatusAny(cmd)
 	root.AddCommand(cmd)
 }
 
