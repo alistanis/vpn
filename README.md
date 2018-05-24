@@ -1,5 +1,5 @@
 # vpn
-Handle vpn's with totp
+Handle vpn's with totp (openvpn only for now, as this is just a command wrapper)
 
 # usage
 
