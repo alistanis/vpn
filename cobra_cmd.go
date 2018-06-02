@@ -25,6 +25,8 @@ func rootCmd() *cobra.Command {
 }
 
 func addStartCommand(root *cobra.Command) {
+
+	var runAs string
 	aliases := []string{"up"}
 	cmd := &cobra.Command{
 		Use:     "start [flags] [network]",
@@ -40,10 +42,22 @@ func addStartCommand(root *cobra.Command) {
 				return err
 			}
 
+			if u.Username == "root" {
+				if runAs == "" {
+					return errors.New("must provide the --user flag when running as root")
+				}
+
+				u, err = user.Lookup(runAs)
+				if err != nil {
+					return err
+				}
+			}
+
 			return start(args[0], u)
 
 		},
 	}
+	cmd.Flags().StringVarP(&runAs, "user", "u", "", "the user to run the vpn as - really, just for configuration as openvpn must be run as root anyway")
 	root.AddCommand(cmd)
 }
 

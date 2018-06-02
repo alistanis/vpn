@@ -17,6 +17,7 @@ import (
 )
 
 func start(network string, u *user.User) error {
+
 	networkPath, vpnUserPath := getPaths(u, network)
 	configPath := filepath.Join(networkPath, "config.json")
 
